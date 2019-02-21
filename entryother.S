@@ -70,7 +70,7 @@ start32:
   # Switch to the stack allocated by startothers()
   movl    (start-4), %esp
   # Call mpenter()
-  call	 *(start-8)
+  call	 *(start-8)   ## See main.c:43
 
   movw    $0x8a00, %ax
   movw    %ax, %dx

@@ -101,7 +101,7 @@ mpinit(void)
   if((conf = mpconfig(&mp)) == 0)
     panic("Expect to run on an SMP");
   ismp = 1;
-  lapic = (uint*)conf->lapicaddr;
+  lapic = (uint*)conf->lapicaddr;   /// Local APIC address
   for(p=(uchar*)(conf+1), e=(uchar*)conf+conf->length; p<e; ){
     switch(*p){
     case MPPROC:
@@ -112,7 +112,7 @@ mpinit(void)
       }
       p += sizeof(struct mpproc);
       continue;
-    case MPIOAPIC:
+    case MPIOAPIC:    /// This is an IO APIC
       ioapic = (struct mpioapic*)p;
       ioapicid = ioapic->apicno;
       p += sizeof(struct mpioapic);

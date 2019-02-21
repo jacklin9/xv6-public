@@ -38,22 +38,23 @@ multiboot_header:
 # Since we haven't set up virtual memory yet, our entry point is
 # the physical address of 'entry'.
 .globl _start
-_start = V2P_WO(entry)
+_start = V2P_WO(entry)  ## memlayout.h:14
 
 # Entering xv6 on boot processor, with paging off.
 .globl entry
 entry:
   # Turn on page size extension for 4Mbyte pages
   movl    %cr4, %eax
-  orl     $(CR4_PSE), %eax
+  orl     $(CR4_PSE), %eax    ## mmu.h:12
   movl    %eax, %cr4
   # Set page directory
-  movl    $(V2P_WO(entrypgdir)), %eax
+  movl    $(V2P_WO(entrypgdir)), %eax   ## main.c:60
   movl    %eax, %cr3
   # Turn on paging.
   movl    %cr0, %eax
   orl     $(CR0_PG|CR0_WP), %eax
-  movl    %eax, %cr0
+  movl    %eax, %cr0        ## This maps the virtual address [0, 4M] and [KERNBASE, KERNBASE + $M] to [0, 4M].
+                            ## The reason is sometimes the kernal code may use virtual address and physical address interchangely
 
   # Set up the stack pointer.
   movl $(stack + KSTACKSIZE), %esp

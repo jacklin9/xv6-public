@@ -104,6 +104,14 @@ found:
 
   // Set up new context to start executing at forkret,
   // which returns to trapret.
+  /// Make a stack which looks like trapret calls forkret, and forkret was interrupted by other process.
+  /// So when the process is scheduled, forkret will run, and when it returns, it will return to trapret. trapret
+  /// will use the interrupted trap frame (pointed to by p->tf which is above the slot that stores trapret addr) 
+  /// to return to interrupted point. p->context is used to store the kernal context before switching to another process
+  /// So the kernel stack looks like this
+  /// | trap frame which p->tf points to                          | High Addr
+  /// | addr of trapret                                           |
+  /// | p->context which contains eip (initially set to forkret)  | Low Addr
   sp -= 4;
   *(uint*)sp = (uint)trapret;
 
@@ -343,6 +351,12 @@ scheduler(void)
       switchuvm(p);
       p->state = RUNNING;
 
+      /// This is the place where magic happens: stop the scheduler and store the scheduler context to c->scheduler
+      /// and restore the kernel context of chosen p. When swtch returns, there must be some process calls swtch
+      /// with c->scheduler as the second parameter so the calling process stops.
+      /// There are only two places that call swtch:
+      /// 1. scheduler here that switches to a process
+      /// 2. Sched that go back to scheduler when a process cannot run further and needs call scheduler to trigger a schedule
       swtch(&(c->scheduler), p->context);
       switchkvm();
 
