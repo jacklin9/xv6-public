@@ -3,10 +3,12 @@
 #include "defs.h"
 #include "kbd.h"
 
+/// See https://www.win.tue.nl/~aeb/linux/kbd/scancodes-1.html
 int
 kbdgetc(void)
 {
-  static uint shift;
+  static uint shift;  /// Here shift doesn't mean shift key; it means some indicators or
+                      /// flags set or cleared by key press/release
   static uchar *charcode[4] = {
     normalmap, shiftmap, ctlmap, ctlmap
   };
@@ -17,12 +19,13 @@ kbdgetc(void)
     return -1;
   data = inb(KBDATAP);
 
-  if(data == 0xE0){
+  if(data == 0xE0){ /// Entering escape scan code sequence
     shift |= E0ESC;
     return 0;
   } else if(data & 0x80){
     // Key released
-    data = (shift & E0ESC ? data : data & 0x7F);
+    data = (shift & E0ESC ? data : data & 0x7F);  /// Why keep data unchanged if data is in
+                                                  /// escape sequence
     shift &= ~(shiftcode[data] | E0ESC);
     return 0;
   } else if(shift & E0ESC){
