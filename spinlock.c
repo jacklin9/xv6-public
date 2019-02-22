@@ -21,10 +21,19 @@ initlock(struct spinlock *lk, char *name)
 // Loops (spins) until the lock is acquired.
 // Holding a lock for a long time may cause
 // other CPUs to waste time spinning to acquire it.
+
+/// Generally lock is used to synchronize the access among CPU's, and interrupt is used to synchronize the access
+/// in a CPU
 void
 acquire(struct spinlock *lk)
 {
   pushcli(); // disable interrupts to avoid deadlock.
+              /// If interrupt is not disabled here, a process holding the lock may get interrupted and another process
+              /// will get to run. If it tries to acquire the lock, it will fail and spin. So it's highly possible to
+              /// cause deadlock
+              /// Question: shall we call pushcli after calling xchg to avoid race condition of calling pushcli
+              /// Answer: no need because race condition of calling pushcli can only happen in one CPU and at the beginning
+              /// of pushcli, interrupt is disabled
   if(holding(lk))
     panic("acquire");
 
@@ -35,6 +44,7 @@ acquire(struct spinlock *lk)
   // Tell the C compiler and the processor to not move loads or stores
   // past this point, to ensure that the critical section's memory
   // references happen after the lock is acquired.
+  /// This is a barrier. The function is a builtin function of GCC to set the full barrier
   __sync_synchronize();
 
   // Record info about lock acquisition for debugging.

@@ -35,7 +35,7 @@ bootmain(void)
   ph = (struct proghdr*)((uchar*)elf + elf->phoff);
   eph = ph + elf->phnum;
   for(; ph < eph; ph++){
-    pa = (uchar*)ph->paddr;             /// This is generally set by the AT directive in link script
+    pa = (uchar*)ph->paddr;             /// This is generally set by the AT directive in link script. See kernel.ld:14
     readseg(pa, ph->filesz, ph->off);
     if(ph->memsz > ph->filesz)
       stosb(pa + ph->filesz, 0, ph->memsz - ph->filesz);
@@ -68,7 +68,7 @@ readsect(void *dst, uint offset)
   outb(0x1F6, (offset >> 24) | 0xE0);
   outb(0x1F7, 0x20);  // cmd 0x20 - read sectors
 
-  // Read data.
+  // Read data.   /// Use busy-wait to read data instead of generating interrupt. For interrupt generation, see ide.c:74
   waitdisk();
   insl(0x1F0, dst, SECTSIZE/4);
 }

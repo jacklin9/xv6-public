@@ -58,7 +58,7 @@ struct proc*
 myproc(void) {
   struct cpu *c;
   struct proc *p;
-  pushcli();
+  pushcli();    /// Make sure proc is not changed here
   c = mycpu();
   p = c->proc;
   popcli();

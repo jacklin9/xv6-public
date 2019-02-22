@@ -28,7 +28,7 @@
 
 struct {
   struct spinlock lock;
-  struct buf buf[NBUF];
+  struct buf buf[NBUF];   /// Here the implementation is simplified: xv6 uses a preallocated list to manage block cache
 
   // Linked list of all buffers, through prev/next.
   // head.next is most recently used.
@@ -59,7 +59,7 @@ binit(void)
 // If not found, allocate a buffer.
 // In either case, return locked buffer.
 static struct buf*
-bget(uint dev, uint blockno)
+bget(uint dev, uint blockno)    /// bread, bwrite, and brelse are public interface, bget is a private one. Do not use bget directly
 {
   struct buf *b;
 
@@ -78,7 +78,7 @@ bget(uint dev, uint blockno)
   // Not cached; recycle an unused buffer.
   // Even if refcnt==0, B_DIRTY indicates a buffer is in use
   // because log.c has modified it but not yet committed it.
-  for(b = bcache.head.prev; b != &bcache.head; b = b->prev){
+  for(b = bcache.head.prev; b != &bcache.head; b = b->prev){  /// Traverse the block cache list to take the least recently used cache
     if(b->refcnt == 0 && (b->flags & B_DIRTY) == 0) {
       b->dev = dev;
       b->blockno = blockno;
@@ -94,7 +94,7 @@ bget(uint dev, uint blockno)
 
 // Return a locked buf with the contents of the indicated block.
 struct buf*
-bread(uint dev, uint blockno)
+bread(uint dev, uint blockno)   /// The process calling the function may go to sleep
 {
   struct buf *b;
 
@@ -127,7 +127,8 @@ brelse(struct buf *b)
 
   acquire(&bcache.lock);
   b->refcnt--;
-  if (b->refcnt == 0) {
+  if (b->refcnt == 0) {   /// No process is using the block cache, so put it to the head of the list to make sure
+                          /// it is not recycled quickly
     // no one is waiting for it.
     b->next->prev = b->prev;
     b->prev->next = b->next;

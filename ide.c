@@ -155,7 +155,9 @@ iderw(struct buf *b)
   *pp = b;
 
   // Start disk if necessary.
-  if(idequeue == b)
+  if(idequeue == b)   /// Trigger the disk IO. Generally the process who puts an IO task to an empty list
+                      /// is responsible for starting the IO. The disk interrupt handler is responsible for
+                      /// checking if the ide queue is empty. If not, the handler should start the first IO
     idestart(b);
 
   // Wait for request to finish.
