@@ -32,8 +32,8 @@
 // Contents of the header block, used for both the on-disk header block
 // and to keep track in memory of logged block# before commit.
 struct logheader {
-  int n;
-  int block[LOGSIZE];
+  int n;    /// The number of currently occupied data blocks as redo log
+  int block[LOGSIZE]; /// The list of occupied block ID as redo log
 };
 
 struct log {

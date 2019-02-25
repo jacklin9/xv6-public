@@ -333,7 +333,7 @@ void
 iput(struct inode *ip)
 {
   acquiresleep(&ip->lock);
-  if(ip->valid && ip->nlink == 0){
+  if(ip->valid && ip->nlink == 0){  /// The link number of this inode is 0
     acquire(&icache.lock);
     int r = ip->ref;
     release(&icache.lock);
