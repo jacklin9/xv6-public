@@ -9,6 +9,7 @@
 // [ boot block | super block | log | inode blocks |
 //                                          free bit map | data blocks]
 //
+/// boot block is block 0. super block is block 1.
 // mkfs computes the super block and builds an initial file system. The
 // super block describes the disk layout:
 struct superblock {

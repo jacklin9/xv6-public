@@ -6,6 +6,14 @@
 #include "fs.h"
 #include "buf.h"
 
+/// Log write here is a block level log system to make sure log writing/reading is transactional
+/// The process of logged block write is following:
+/// 1. Caller calls begin_op to make sure the transaction can be started
+/// 2. Caller calls log_write instead of bwrite to record the block ID of cached block to be writen to log header
+/// 3. Caller calls end_op, which calls commit if needed, which in turn calls write_log that writes the cached block
+///   to log block and then calls write_head which is the real commit. If needed, commit also calls install_trans to write
+///   transaction result to data blocks
+
 // Simple logging that allows concurrent FS system calls.
 //
 // A log transaction contains the updates of multiple FS system
@@ -59,10 +67,12 @@ initlog(int dev)
   struct superblock sb;
   initlock(&log.lock, "log");
   readsb(dev, &sb);
+  /// Following 3 statements initialize log struct
   log.start = sb.logstart;
   log.size = sb.nlog;
   log.dev = dev;
-  recover_from_log();
+  recover_from_log(); /// Initialize log.lh and if the log has some commited log records, write that to data blocks
+                      /// to make sure the log is cleared
 }
 
 // Copy committed blocks from log to their home location
@@ -85,8 +95,8 @@ install_trans(void)
 static void
 read_head(void)
 {
-  struct buf *buf = bread(log.dev, log.start);
-  struct logheader *lh = (struct logheader *) (buf->data);
+  struct buf *buf = bread(log.dev, log.start);    /// Try to read the block that contains log header
+  struct logheader *lh = (struct logheader *) (buf->data);  /// Log header is at the beginning of the first log block
   int i;
   log.lh.n = lh->n;
   for (i = 0; i < log.lh.n; i++) {
@@ -115,7 +125,7 @@ write_head(void)
 static void
 recover_from_log(void)
 {
-  read_head();
+  read_head();  /// Initialize log header in mem
   install_trans(); // if committed, copy from log to disk
   log.lh.n = 0;
   write_head(); // clear the log
@@ -149,9 +159,9 @@ end_op(void)
 
   acquire(&log.lock);
   log.outstanding -= 1;
-  if(log.committing)
+  if(log.committing)    /// Another transaction is ongoing when the current transaction is being to be committed.
     panic("log.committing");
-  if(log.outstanding == 0){
+  if(log.outstanding == 0){ /// The commiting can be done now
     do_commit = 1;
     log.committing = 1;
   } else {
@@ -181,7 +191,7 @@ write_log(void)
 
   for (tail = 0; tail < log.lh.n; tail++) {
     struct buf *to = bread(log.dev, log.start+tail+1); // log block
-    struct buf *from = bread(log.dev, log.lh.block[tail]); // cache block
+    struct buf *from = bread(log.dev, log.lh.block[tail]); // cache block   /// What is cache block
     memmove(to->data, from->data, BSIZE);
     bwrite(to);  // write the log
     brelse(from);
@@ -211,7 +221,7 @@ commit()
 //   log_write(bp)
 //   brelse(bp)
 void
-log_write(struct buf *b)
+log_write(struct buf *b)  /// The interface to do logged block write
 {
   int i;
 

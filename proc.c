@@ -131,7 +131,7 @@ userinit(void)
   struct proc *p;
   extern char _binary_initcode_start[], _binary_initcode_size[];
 
-  p = allocproc();
+  p = allocproc();  /// Allocate a proc slot and initailize the kernel level information (like the kernel stack, kernel context)
   
   initproc = p;
   if((p->pgdir = setupkvm()) == 0)
