@@ -37,7 +37,7 @@ void
 trap(struct trapframe *tf)
 {
   if(tf->trapno == T_SYSCALL){
-    if(myproc()->killed)
+    if(myproc()->killed)    /// Why can a killed process do system call
       exit();
     myproc()->tf = tf;
     syscall();

@@ -17,7 +17,7 @@ alltraps:
 
   # Call trap(tf), where tf=%esp
   pushl %esp
-  call trap
+  call trap   /// See trap.c:37
   addl $4, %esp
 
   # Return falls through to trapret...

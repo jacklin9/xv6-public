@@ -33,7 +33,7 @@ for(my $i = 0; $i < 256; $i++){
 #   vector0:
 #     pushl $0
 #     pushl $0
-#     jmp alltraps
+#     jmp alltraps  /// See trapasm.S:5
 #   ...
 #   
 #   # vector table
