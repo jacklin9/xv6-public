@@ -433,6 +433,11 @@ forkret(void)
     // Some initialization functions must be run in the context
     // of a regular process (e.g., they call sleep), and thus cannot
     // be run from main().
+    /// There are some initializations
+    /// calling functions that need process context (for example, sleep). 
+    /// These initializations are acted in forkret which is first called 
+    /// when proc 1 (init) is first scheduled to run.
+    /// These initializations include iinit, initlog.
     first = 0;
     iinit(ROOTDEV);
     initlog(ROOTDEV);
