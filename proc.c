@@ -10,7 +10,12 @@
 struct {
   struct spinlock lock;
   struct proc proc[NPROC];
-} ptable;
+} ptable;   /// Table(like ptable, ftable) is different from cache(like bcache, icache):
+            /// when there is no reference to a table entry, the entry is immediately
+            /// recycled; when there is no reference to a cache entry, then entry is not
+            /// immediately recycled: it acts like a cache and is expected to be referenced
+            /// again and quickly, and if there is not enough cache entry, some unreferenced
+            /// cache entry will be recycled
 
 static struct proc *initproc;
 
@@ -58,7 +63,9 @@ struct proc*
 myproc(void) {
   struct cpu *c;
   struct proc *p;
-  pushcli();    /// Make sure proc is not changed here
+  pushcli();    /// Make sure proc is not changed here. If interrupt is enabled here,
+                /// proc may be changed during execution of following statements when
+                /// interrupt happens
   c = mycpu();
   p = c->proc;
   popcli();
@@ -70,13 +77,16 @@ myproc(void) {
 // If found, change state to EMBRYO and initialize
 // state required to run in the kernel.
 // Otherwise return 0.
+/// Find an available proc slot and initialize it by 
+/// allocating kernel stack and setting up the kernel 
+/// context and trap frame
 static struct proc*
 allocproc(void)
 {
   struct proc *p;
   char *sp;
 
-  acquire(&ptable.lock);
+  acquire(&ptable.lock);  /// Lock proc table to avoid competition from other CPU
 
   for(p = ptable.proc; p < &ptable.proc[NPROC]; p++)
     if(p->state == UNUSED)
@@ -198,7 +208,9 @@ fork(void)
   }
 
   // Copy process state from proc.
-  if((np->pgdir = copyuvm(curproc->pgdir, curproc->sz)) == 0){
+  if((np->pgdir = copyuvm(curproc->pgdir, curproc->sz)) == 0){  /// Copy the kernel
+                                                                /// mapping and user mem
+                                                                /// and mapping
     kfree(np->kstack);
     np->kstack = 0;
     np->state = UNUSED;
@@ -220,7 +232,9 @@ fork(void)
 
   pid = np->pid;
 
-  acquire(&ptable.lock);
+  acquire(&ptable.lock);  /// Maybe no need to lock proc table here because
+                          /// at this stage no other code can change the status
+                          /// of the new proc
 
   np->state = RUNNABLE;
 
@@ -264,7 +278,8 @@ exit(void)
   for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
     if(p->parent == curproc){
       p->parent = initproc;
-      if(p->state == ZOMBIE)
+      if(p->state == ZOMBIE)  /// If there is a child that has been dead,
+                              /// wake up initproc to clean it up
         wakeup1(initproc);
     }
   }
@@ -278,7 +293,7 @@ exit(void)
 // Wait for a child process to exit and return its pid.
 // Return -1 if this process has no children.
 int
-wait(void)
+wait(void)  /// Free up kernel stack, mem map table
 {
   struct proc *p;
   int havekids, pid;
@@ -391,7 +406,7 @@ sched(void)
   if(readeflags()&FL_IF)
     panic("sched interruptible");
   intena = mycpu()->intena;
-  swtch(&p->context, mycpu()->scheduler);
+  swtch(&p->context, mycpu()->scheduler); /// See swtch.S:10
   mycpu()->intena = intena;
 }
 
@@ -418,6 +433,11 @@ forkret(void)
     // Some initialization functions must be run in the context
     // of a regular process (e.g., they call sleep), and thus cannot
     // be run from main().
+    /// There are some initializations
+    /// calling functions that need process context (for example, sleep). 
+    /// These initializations are acted in forkret which is first called 
+    /// when proc 1 (init) is first scheduled to run.
+    /// These initializations include iinit, initlog.
     first = 0;
     iinit(ROOTDEV);
     initlog(ROOTDEV);
@@ -469,7 +489,7 @@ sleep(void *chan, struct spinlock *lk)
 // Wake up all processes sleeping on chan.
 // The ptable lock must be held.
 static void
-wakeup1(void *chan)
+wakeup1(void *chan)   /// To call this func, lock to ptable must be held
 {
   struct proc *p;
 

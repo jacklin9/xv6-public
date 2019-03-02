@@ -26,16 +26,16 @@ pipealloc(struct file **f0, struct file **f1)
 
   p = 0;
   *f0 = *f1 = 0;
-  if((*f0 = filealloc()) == 0 || (*f1 = filealloc()) == 0)
+  if((*f0 = filealloc()) == 0 || (*f1 = filealloc()) == 0)  /// Allocate file struct for read and write ends
     goto bad;
-  if((p = (struct pipe*)kalloc()) == 0)
+  if((p = (struct pipe*)kalloc()) == 0) /// Allocate one physical page as pipe struct
     goto bad;
   p->readopen = 1;
   p->writeopen = 1;
   p->nwrite = 0;
   p->nread = 0;
   initlock(&p->lock, "pipe");
-  (*f0)->type = FD_PIPE;
+  (*f0)->type = FD_PIPE;  /// Init read end file struct: not point to inode, point to pipe instead
   (*f0)->readable = 1;
   (*f0)->writable = 0;
   (*f0)->pipe = p;

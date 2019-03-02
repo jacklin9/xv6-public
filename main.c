@@ -66,6 +66,10 @@ mpmain(void)
   idtinit();       // load idt register
   xchg(&(mycpu()->started), 1); // tell startothers() we're up
   scheduler();     // start running processes
+  /// Actually initialization doesn't finish yet. There are some initializations
+  /// calling functions that need process context (for example, sleep). These initializations
+  /// are acted in forkret which is first called when proc 1 (init) is first scheduled to run.
+  /// These initializations include iinit, initlog. See proc.c:432
 }
 
 pde_t entrypgdir[];  // For entry.S

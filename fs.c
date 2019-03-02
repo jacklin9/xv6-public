@@ -277,7 +277,7 @@ iget(uint dev, uint inum)
 struct inode*
 idup(struct inode *ip)
 {
-  acquire(&icache.lock);
+  acquire(&icache.lock);  /// Lock inode cache table to avoid access conflict
   ip->ref++;
   release(&icache.lock);
   return ip;
@@ -296,7 +296,7 @@ ilock(struct inode *ip)
 
   acquiresleep(&ip->lock);
 
-  if(ip->valid == 0){
+  if(ip->valid == 0){ /// the inode is not read to mem yet
     bp = bread(ip->dev, IBLOCK(ip->inum, sb));
     dip = (struct dinode*)bp->data + ip->inum%IPB;
     ip->type = dip->type;
