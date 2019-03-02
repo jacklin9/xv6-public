@@ -20,7 +20,9 @@ initsleeplock(struct sleeplock *lk, char *name)
 }
 
 void
-acquiresleep(struct sleeplock *lk)  /// A lock that allows go to sleep when waiting for the lock
+acquiresleep(struct sleeplock *lk)  /// A lock that allows go to sleep when waiting for the lock.
+                                    /// A sleep lock needs be protected by a spinlock, otherwise status change
+                                    /// may be not synchronized
 {
   acquire(&lk->lk);
   while (lk->locked) {

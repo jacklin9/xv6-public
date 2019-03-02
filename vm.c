@@ -115,6 +115,7 @@ static struct kmap {
 };
 
 // Set up kernel part of a page table.
+/// Set up the kernal mem mapping
 pde_t*
 setupkvm(void)
 {

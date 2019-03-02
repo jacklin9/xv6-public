@@ -106,7 +106,7 @@ extern int sys_uptime(void);
 
 static int (*syscalls[])(void) = {
 [SYS_fork]    sys_fork,
-[SYS_exit]    sys_exit,
+[SYS_exit]    sys_exit, /// After a proc exit, it still holds some resource (like kenral stack, mem map)
 [SYS_wait]    sys_wait,
 [SYS_pipe]    sys_pipe,
 [SYS_read]    sys_read,

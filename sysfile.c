@@ -420,6 +420,7 @@ sys_exec(void)
   return exec(path, argv);
 }
 
+/// Pipe is implemented as a struct pipe which is actually a queue
 int
 sys_pipe(void)
 {

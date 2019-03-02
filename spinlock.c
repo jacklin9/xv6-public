@@ -22,7 +22,7 @@ initlock(struct spinlock *lk, char *name)
 // Holding a lock for a long time may cause
 // other CPUs to waste time spinning to acquire it.
 
-/// Generally lock is used to synchronize the access among CPU's, and interrupt is used to synchronize the access
+/// Generally field locked is used to synchronize the access among CPU's, and interrupt is used to synchronize the access
 /// in a CPU
 void
 acquire(struct spinlock *lk)

@@ -44,7 +44,7 @@ filealloc(void)
 struct file*
 filedup(struct file *f)
 {
-  acquire(&ftable.lock);
+  acquire(&ftable.lock);  /// Lock file table to avoid access conflict
   if(f->ref < 1)
     panic("filedup");
   f->ref++;
@@ -103,7 +103,7 @@ fileread(struct file *f, char *addr, int n)
   if(f->type == FD_PIPE)
     return piperead(f->pipe, addr, n);
   if(f->type == FD_INODE){
-    ilock(f->ip);
+    ilock(f->ip);   /// Get the in-mem inode cache
     if((r = readi(f->ip, addr, f->off, n)) > 0)
       f->off += r;
     iunlock(f->ip);
