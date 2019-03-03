@@ -162,9 +162,12 @@ iderw(struct buf *b)
 
   // Wait for request to finish.
   while((b->flags & (B_VALID|B_DIRTY)) != B_VALID){
-    sleep(b, &idelock);
+    sleep(b, &idelock); /// When calling sleep, the process must hold a spin lock.
+                        /// Before calling sched, the spin lock is released, and when return
+                        /// from sched, the spin lock is acquired again. The reason is, if
+                        /// a proc calls sleep, it must have checked a status. This status
+                        /// must be protected by a lock
   }
-
-
+  
   release(&idelock);
 }

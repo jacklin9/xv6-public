@@ -19,6 +19,16 @@
 #
 # This code combines elements of bootasm.S and entry.S.
 
+## This code is built with instructions at Makefile:111. The built pure
+## binary is put to an area in data segment of kernel image starting with
+## _binary_entryother_start.
+## Code main.c:startothers is responsbile for to trigger this code:
+## 1. Copy the pure binary code to physical addr 0x7000
+## 2. Store some addrs to following mem
+##    a. Put available kernel stack to addr start - 4
+##    b. Put addr of mpenter to addr start - 8
+##    c. Put addr of temp mem map addr to addr start - 12
+## 3. Trigger an inter processor interrupt to start the CPU to run code starting from start
 .code16           
 .globl start
 start:
@@ -70,7 +80,7 @@ start32:
   # Switch to the stack allocated by startothers()
   movl    (start-4), %esp
   # Call mpenter()
-  call	 *(start-8)   ## See main.c:43
+  call	 *(start-8)   ## See main.c:53
 
   movw    $0x8a00, %ax
   movw    %ax, %dx

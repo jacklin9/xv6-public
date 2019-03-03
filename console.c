@@ -52,7 +52,7 @@ printint(int xx, int base, int sign)
 
 // Print to the console. only understands %d, %x, %p, %s.
 void
-cprintf(char *fmt, ...)
+cprintf(char *fmt, ...) /// A simple version of cprintf
 {
   int i, c, locking;
   uint *argp;
@@ -165,7 +165,7 @@ cgaputc(int c)
 void
 consputc(int c)
 {
-  if(panicked){
+  if(panicked){ /// If in panic, disable interrupt and spin
     cli();
     for(;;)
       ;

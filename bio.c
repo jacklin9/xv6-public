@@ -101,7 +101,8 @@ bread(uint dev, uint blockno)   /// The process calling the function may go to s
   struct buf *b;
 
   b = bget(dev, blockno);
-  if((b->flags & B_VALID) == 0) {
+  if((b->flags & B_VALID) == 0) { /// If the block cache is not valid, it means
+                                  /// the block is not read from disk, so read it
     iderw(b);
   }
   return b;
