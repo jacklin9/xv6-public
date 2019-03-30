@@ -58,7 +58,7 @@ cprintf(char *fmt, ...) /// A simple version of cprintf
   uint *argp;
   char *s;
 
-  locking = cons.locking;
+  locking = cons.locking; /// No race condition here because cons.locking is only modified at the initialization
   if(locking)
     acquire(&cons.lock);
 

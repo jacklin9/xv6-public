@@ -24,13 +24,16 @@ initlock(struct spinlock *lk, char *name)
 
 /// Generally field locked is used to synchronize the access among CPU's, and interrupt is used to synchronize the access
 /// in a CPU
+/// In kernel, if a function needs read/write a static/global resource that may be written by another execution
+/// thread, some kind of synchroniziation is needed
 void
 acquire(struct spinlock *lk)
 {
   pushcli(); // disable interrupts to avoid deadlock.
               /// If interrupt is not disabled here, a process holding the lock may get interrupted and another process
               /// will get to run. If it tries to acquire the lock, it will fail and spin. So it's highly possible to
-              /// cause deadlock
+              /// cause deadlock. If a protected resource is guaranteed to not be accessed by interrupt service routine,
+              /// it is OK to not disable interrupt.
               /// Question: shall we call pushcli after calling xchg to avoid race condition of calling pushcli
               /// Answer: no need because race condition of calling pushcli can only happen in one CPU and at the beginning
               /// of pushcli, interrupt is disabled

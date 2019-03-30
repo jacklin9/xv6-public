@@ -9,7 +9,7 @@
 
 // The 0xC0 means the limit is in 4096-byte units
 // and (for executable segments) 32-bit mode.
-/// Generate segment descriptor
+/// The macro of generating segment descriptor
 #define SEG_ASM(type,base,lim)                                  \
         .word (((lim) >> 12) & 0xffff), ((base) & 0xffff);      \
         .byte (((base) >> 16) & 0xff), (0x90 | (type)),         \

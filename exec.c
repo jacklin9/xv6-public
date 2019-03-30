@@ -19,7 +19,7 @@ exec(char *path, char **argv)
   pde_t *pgdir, *oldpgdir;
   struct proc *curproc = myproc();
 
-  begin_op();
+  begin_op(); /// Can we start a transaction?
 
   if((ip = namei(path)) == 0){
     end_op();

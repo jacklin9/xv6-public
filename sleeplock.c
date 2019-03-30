@@ -26,7 +26,8 @@ acquiresleep(struct sleeplock *lk)  /// A lock that allows go to sleep when wait
 {
   acquire(&lk->lk);
   while (lk->locked) {
-    sleep(lk, &lk->lk);
+    sleep(lk, &lk->lk); /// Problem: if a proc sleeps, will it hold the spin lock lk->lk too long?
+                        /// Answer: no: in sleep, the lock will be released
   }
   lk->locked = 1;
   lk->pid = myproc()->pid;

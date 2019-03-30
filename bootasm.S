@@ -39,7 +39,7 @@ seta20.2:
   # Switch from real to protected mode.  Use a bootstrap GDT that makes
   # virtual addresses map directly to physical addresses so that the
   # effective memory map doesn't change during the transition.
-  lgdt    gdtdesc
+  lgdt    gdtdesc   /// gdtdesc see bootasm.S:85
   movl    %cr0, %eax
   orl     $CR0_PE, %eax
   movl    %eax, %cr0
@@ -63,7 +63,7 @@ start32:
 
   # Set up the stack pointer and call into C.
   movl    $start, %esp
-  call    bootmain
+  call    bootmain  /// bootmain see bootmain.c:19
 
   # If bootmain returns (it shouldn't), trigger a Bochs
   # breakpoint if running under Bochs, then loop.

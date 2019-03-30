@@ -22,7 +22,7 @@
 ## This code is built with instructions at Makefile:111. The built pure
 ## binary is put to an area in data segment of kernel image starting with
 ## _binary_entryother_start.
-## Code main.c:startothers is responsbile for to trigger this code:
+## Code main.c:startothers is responsible for ttriggering this code:
 ## 1. Copy the pure binary code to physical addr 0x7000
 ## 2. Store some addrs to following mem
 ##    a. Put available kernel stack to addr start - 4
