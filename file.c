@@ -30,7 +30,7 @@ filealloc(void)
 
   acquire(&ftable.lock);
   for(f = ftable.file; f < ftable.file + NFILE; f++){
-    if(f->ref == 0){
+    if(f->ref == 0){  /// Found a free file struct
       f->ref = 1;
       release(&ftable.lock);
       return f;

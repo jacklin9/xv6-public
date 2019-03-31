@@ -239,6 +239,7 @@ iupdate(struct inode *ip)
 // Find the inode with number inum on device dev
 // and return the in-memory copy. Does not lock
 // the inode and does not read it from disk.
+/// iget is to find the in-mem inode cache
 static struct inode*
 iget(uint dev, uint inum)
 {
@@ -285,6 +286,7 @@ idup(struct inode *ip)
 
 // Lock the given inode.
 // Reads the inode from disk if necessary.
+/// ilock is to make sure the in-mem inode fulfilled and locked for use
 void
 ilock(struct inode *ip)
 {
@@ -633,7 +635,7 @@ namex(char *path, int nameiparent, char *name)
     ip = idup(myproc()->cwd);
 
   while((path = skipelem(path, name)) != 0){
-    ilock(ip);
+    ilock(ip);  /// The inode cache is in use
     if(ip->type != T_DIR){
       iunlockput(ip);
       return 0;

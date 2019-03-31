@@ -137,7 +137,7 @@ begin_op(void)
 {
   acquire(&log.lock);
   while(1){
-    if(log.committing){   /// In committing, need to wait for last commit to finish
+    if(log.commi  tting){   /// In committing, need to wait for last commit to finish
       sleep(&log, &log.lock);
     } else if(log.lh.n + (log.outstanding+1)*MAXOPBLOCKS > LOGSIZE){
       // this op might exhaust log space; wait for commit.
